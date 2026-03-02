@@ -21,8 +21,6 @@ jobs:
 
       - name: Sync Images
         run: |
-          # 设置你的阿里云命名空间
-          NAMESPACE="chenzhenci"
           REGISTRY="${{ secrets.ALIYUN_REGISTRY }}"
           
           # 读取 images.txt 并循环处理
@@ -43,7 +41,7 @@ jobs:
             fi
           
             # 组合目标地址
-            TARGET_IMAGE="$REGISTRY/$NAMESPACE/$TARGET_NAME:$TAG"
+            TARGET_IMAGE="$REGISTRY/$TARGET_NAME:$TAG"
           
             # 打标签并推送
             docker tag $SOURCE_IMAGE $TARGET_IMAGE
