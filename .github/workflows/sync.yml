@@ -1,0 +1,53 @@
+name: Batch Sync Images to Aliyun
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *' # 每天凌晨3点
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Aliyun Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ secrets.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_USERNAME }}
+          password: ${{ secrets.ALIYUN_PASSWORD }}
+
+      - name: Sync Images
+        run: |
+          # 设置你的阿里云命名空间
+          NAMESPACE="chenzhenci"
+          REGISTRY="${{ secrets.ALIYUN_REGISTRY }}"
+          
+          # 读取 images.txt 并循环处理
+          while IFS=' ' read -r SOURCE_IMAGE TARGET_NAME; do
+            if [ -z "$SOURCE_IMAGE" ]; then
+              continue
+            fi
+          
+            echo "Processing $SOURCE_IMAGE..."
+          
+            # 拉取
+            docker pull $SOURCE_IMAGE
+          
+            # 获取标签部分（如果源是 nginx:latest，TAG 就是 latest）
+            TAG=$(echo $SOURCE_IMAGE | awk -F: '{print $2}')
+            if [ -z "$TAG" ]; then
+              TAG="latest"
+            fi
+          
+            # 组合目标地址
+            TARGET_IMAGE="$REGISTRY/$NAMESPACE/$TARGET_NAME:$TAG"
+          
+            # 打标签并推送
+            docker tag $SOURCE_IMAGE $TARGET_IMAGE
+            docker push $TARGET_IMAGE
+          
+            echo "Pushed $TARGET_IMAGE"
+          done < images.txt
