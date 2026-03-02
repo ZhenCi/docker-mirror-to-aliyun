@@ -23,6 +23,9 @@ jobs:
         run: |
           REGISTRY="${{ secrets.ALIYUN_REGISTRY }}"
           
+          # 定义你的命名空间和仓库名
+          NAMESPACE="chenzhenci"
+          
           # 读取 images.txt 并循环处理
           while IFS=' ' read -r SOURCE_IMAGE TARGET_NAME; do
             if [ -z "$SOURCE_IMAGE" ]; then
@@ -41,7 +44,7 @@ jobs:
             fi
           
             # 组合目标地址
-            TARGET_IMAGE="$REGISTRY/$TARGET_NAME:$TAG"
+            TARGET_IMAGE="$REGISTRY/$NAMESPACE/$TARGET_NAME:$TAG"
           
             # 打标签并推送
             docker tag $SOURCE_IMAGE $TARGET_IMAGE
